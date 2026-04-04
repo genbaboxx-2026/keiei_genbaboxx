@@ -118,7 +118,7 @@ export default function PerCapitaPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" tickFormatter={(v) => `${(v / 100000000).toFixed(1)}億`} />
                   <YAxis type="category" dataKey="department" width={70} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: number) => [`${formatNumber(v)}円`, "1人あたり売上"]} />
+                  <Tooltip formatter={(v) => [`${formatNumber(Number(v))}円`, "1人あたり売上"]} />
                   <Bar dataKey="revenuePerCapita" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>

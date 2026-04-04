@@ -99,7 +99,7 @@ export default function HiringPlanPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="year" tick={{ fontSize: 10 }} />
                       <YAxis tickFormatter={v => `${v}万`} />
-                      <Tooltip formatter={(v: number) => [`${v}万円`, "採用コスト"]} />
+                      <Tooltip formatter={(v) => [`${v}万円`, "採用コスト"]} />
                       <Bar dataKey="cost" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>

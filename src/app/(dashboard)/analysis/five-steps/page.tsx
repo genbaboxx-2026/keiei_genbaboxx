@@ -235,7 +235,7 @@ export default function FiveStepsPage() {
                     <Cell fill={PIE_COLORS[0]} />
                     <Cell fill={PIE_COLORS[1]} />
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatNumber(v)} />
+                  <Tooltip formatter={(v) => formatNumber(Number(v))} />
                 </PieChart>
               </ResponsiveContainer>
             </div>

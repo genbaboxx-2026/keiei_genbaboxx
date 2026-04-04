@@ -228,7 +228,7 @@ export default function BusinessDashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(v) => `${v}%`} />
-                  <Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
+                  <Tooltip formatter={(v) => `${Number(v).toFixed(2)}%`} />
                   <ReferenceLine y={0} stroke="#000" />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {waterfallData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}

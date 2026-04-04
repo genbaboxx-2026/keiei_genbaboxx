@@ -121,7 +121,7 @@ export default function FutureSimulationPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="year" />
                     <YAxis tickFormatter={v => `${v}億`} />
-                    <Tooltip formatter={(v: number) => `${v.toFixed(2)}億円`} />
+                    <Tooltip formatter={(v) => `${Number(v).toFixed(2)}億円`} />
                     <Legend />
                     <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="3 3" />
                     <Line type="monotone" dataKey="revenue" name="売上高" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />

@@ -175,7 +175,7 @@ function CostTable({ data, title }: {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} />
               <YAxis type="category" dataKey="name" width={70} tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(v: number) => [`¥${formatNumber(v)}`, "原価/日"]} />
+              <Tooltip formatter={(v) => [`¥${formatNumber(Number(v))}`, "原価/日"]} />
               <Bar dataKey="原価" fill="#3b82f6" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>

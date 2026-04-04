@@ -136,7 +136,7 @@ export default function DashboardPage() {
                     >
                       {PIE_COLORS.map((c, i) => <Cell key={i} fill={c} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => `¥${formatNumber(v)}`} />
+                    <Tooltip formatter={(v) => `¥${formatNumber(Number(v))}`} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
