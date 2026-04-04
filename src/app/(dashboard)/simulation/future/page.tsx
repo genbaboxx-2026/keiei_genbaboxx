@@ -79,7 +79,7 @@ export default function FutureSimulationPage() {
                   <span className="text-xs text-slate-400">{d.ref}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Slider value={[rates[d.key]]} onValueChange={([v]) => setRates(p => ({ ...p, [d.key]: v }))} min={0} max={10} step={0.5} className="flex-1" />
+                  <Slider value={[rates[d.key]]} onValueChange={(v) => setRates(p => ({ ...p, [d.key]: v[0] }))} min={0} max={10} step={0.5} className="flex-1" />
                   <Input type="number" value={rates[d.key]} onChange={e => setRates(p => ({ ...p, [d.key]: Number(e.target.value) || 0 }))} className="w-16 text-right text-sm" step={0.5} />
                   <span className="text-xs text-slate-400">%</span>
                 </div>
