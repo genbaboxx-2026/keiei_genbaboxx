@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prisma";
+import { getSessionUser } from "@/lib/auth/session";
+
+function ser(obj: unknown) { return JSON.parse(JSON.stringify(obj, (_k, v) => typeof v === "bigint" ? Number(v) : v)); }
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await getSessionUser();
+    const { id } = await params;
+    const sim = await prisma.simulation.findFirst({ where: { id, companyId: user.companyId } });
+    if (!sim) return NextResponse.json({ error: { code: "NOT_FOUND", message: "見つかりません" } }, { status: 404 });
+    return NextResponse.json({ data: ser(sim) });
+  } catch (e) {
+    if ((e as Error).message === "UNAUTHORIZED") return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "認証が必要です" } }, { status: 401 });
+    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "取得に失敗しました" } }, { status: 500 });
+  }
+}
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await getSessionUser();
+    const { id } = await params;
+    const sim = await prisma.simulation.findFirst({ where: { id, companyId: user.companyId } });
+    if (!sim) return NextResponse.json({ error: { code: "NOT_FOUND", message: "見つかりません" } }, { status: 404 });
+    await prisma.simulation.delete({ where: { id } });
+    return NextResponse.json({ data: { success: true } });
+  } catch (e) {
+    if ((e as Error).message === "UNAUTHORIZED") return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "認証が必要です" } }, { status: 401 });
+    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "削除に失敗しました" } }, { status: 500 });
+  }
+}

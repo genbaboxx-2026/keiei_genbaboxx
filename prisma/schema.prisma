@@ -1,0 +1,505 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ===== 企業 =====
+model Company {
+  id                    String   @id @default(uuid())
+  name                  String   @db.VarChar(255)
+  industrySubType       String?  @map("industry_sub_type") @db.VarChar(100)
+  fiscalYearStartMonth  Int      @default(4) @map("fiscal_year_start_month")
+  annualWorkingDays     Int      @default(278) @map("annual_working_days")
+  bonusCount            Int      @default(0) @map("bonus_count")
+  onboardingCompleted   Boolean  @default(false) @map("onboarding_completed")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  users               User[]
+  employees            Employee[]
+  equipment            Equipment[]
+  financialStatements  FinancialStatement[]
+  costClassifications  CostClassification[]
+  costMasters          CostMaster[]
+  simulations          Simulation[]
+  llmAnalyses          LlmAnalysis[]
+  employeeProfiles     EmployeeProfile[]
+  revenueAttributions  RevenueAttribution[]
+  workforceSimulations WorkforceSimulation[]
+  performanceCurves    PerformanceCurve[]
+  balanceSheets        BalanceSheet[]
+  companyTargets       CompanyTarget[]
+
+  @@map("companies")
+}
+
+// ===== ユーザー =====
+enum UserRole {
+  admin
+  editor
+  viewer
+}
+
+model User {
+  id           String   @id @default(uuid())
+  companyId    String   @map("company_id")
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  name         String   @db.VarChar(100)
+  role         UserRole @default(viewer)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("users")
+}
+
+// ===== 従業員（人工データ）=====
+enum JobCategory {
+  manager        // 責任者
+  operator       // オペレーター
+  fieldWorker    // 手元
+  driver         // 運転手
+  gasCutter      // ガス工
+  other          // その他
+}
+
+model Employee {
+  id                     String      @id @default(uuid())
+  companyId              String      @map("company_id")
+  fiscalYear             Int         @map("fiscal_year")
+  employeeNo             Int         @map("employee_no")
+  nameOrTitle            String      @map("name_or_title") @db.VarChar(100)
+  jobCategory            JobCategory @map("job_category")
+  monthlyGrossSalary     Int         @map("monthly_gross_salary")
+  monthlyHealthInsurance Int         @map("monthly_health_insurance")
+  monthlyPension         Int         @map("monthly_pension")
+  monthlyDcPension       Int         @default(0) @map("monthly_dc_pension")
+  monthlySafetyFund      Int         @default(0) @map("monthly_safety_fund")
+  monthlyOther           Int         @default(0) @map("monthly_other")
+  monthlySubtotal        Int         @map("monthly_subtotal")
+  annualTotal            Int         @map("annual_total")
+  dailyCost              Int         @map("daily_cost")
+  createdAt              DateTime    @default(now()) @map("created_at")
+  deletedAt              DateTime?   @map("deleted_at")
+  updatedAt              DateTime    @updatedAt @map("updated_at")
+
+  company Company          @relation(fields: [companyId], references: [id])
+  profile EmployeeProfile?
+
+  @@index([companyId, fiscalYear], name: "idx_employees_company_year")
+  @@map("employees")
+}
+
+// ===== 重機・車両・アタッチメント =====
+enum EquipmentType {
+  vehicle       // 車両
+  heavy_machine // 重機
+  attachment    // アタッチメント
+}
+
+enum OwnershipType {
+  owned   // 自社
+  leased  // リース
+  rental  // レンタル
+}
+
+model Equipment {
+  id                  String        @id @default(uuid())
+  companyId           String        @map("company_id")
+  fiscalYear          Int           @map("fiscal_year")
+  equipmentType       EquipmentType @map("equipment_type")
+  name                String        @db.VarChar(255)
+  spec                String?       @db.VarChar(255)
+  sizeCategory        String?       @map("size_category") @db.VarChar(20)
+  attachmentType      String?       @map("attachment_type") @db.VarChar(50)
+  insuranceLiability  Int?          @default(0) @map("insurance_liability")
+  insuranceProperty   Int?          @default(0) @map("insurance_property")
+  insuranceVehicle    Int?          @default(0) @map("insurance_vehicle")
+  insuranceCompulsory Int?          @default(0) @map("insurance_compulsory")
+  vehicleTax          Int?          @default(0) @map("vehicle_tax")
+  annualInspection    Int?          @default(0) @map("annual_inspection")
+  repairMaintenance   Int?          @default(0) @map("repair_maintenance")
+  depreciationAmount  Int?          @default(0) @map("depreciation_amount")
+  leaseAmount         Int?          @default(0) @map("lease_amount")
+  isLeased            Boolean       @default(false) @map("is_leased")
+  isFixedAsset        Boolean       @default(false) @map("is_fixed_asset")
+  ownershipType       OwnershipType @default(owned) @map("ownership_type")
+  annualTotalCost     Int           @map("annual_total_cost")
+  dailyCost           Int           @map("daily_cost")
+  deletedAt           DateTime?     @map("deleted_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, fiscalYear], name: "idx_equipment_company_year")
+  @@index([companyId, fiscalYear, equipmentType], name: "idx_equipment_type")
+  @@map("equipment")
+}
+
+// ===== 決算データ =====
+enum DataType {
+  annual
+  monthly
+}
+
+model FinancialStatement {
+  id                       String   @id @default(uuid())
+  companyId                String   @map("company_id")
+  fiscalYear               Int      @map("fiscal_year")
+  dataType                 DataType @default(annual) @map("data_type")
+  periodMonth              Int?     @map("period_month")
+  revenue                  BigInt   @default(0)
+  // 売上原価
+  cogsSalary               BigInt   @default(0) @map("cogs_salary")
+  cogsBonus                BigInt   @default(0) @map("cogs_bonus")
+  cogsStatutoryWelfare     BigInt   @default(0) @map("cogs_statutory_welfare")
+  cogsSubcontract          BigInt   @default(0) @map("cogs_subcontract")
+  cogsWasteDisposal        BigInt   @default(0) @map("cogs_waste_disposal")
+  cogsPower                BigInt   @default(0) @map("cogs_power")
+  cogsShipping             BigInt   @default(0) @map("cogs_shipping")
+  cogsTravel               BigInt   @default(0) @map("cogs_travel")
+  cogsConsumables          BigInt   @default(0) @map("cogs_consumables")
+  cogsOfficeSupplies       BigInt   @default(0) @map("cogs_office_supplies")
+  cogsRepair               BigInt   @default(0) @map("cogs_repair")
+  cogsUtilities            BigInt   @default(0) @map("cogs_utilities")
+  cogsMembership           BigInt   @default(0) @map("cogs_membership")
+  cogsDepreciation         BigInt   @default(0) @map("cogs_depreciation")
+  cogsTax                  BigInt   @default(0) @map("cogs_tax")
+  cogsInsurance            BigInt   @default(0) @map("cogs_insurance")
+  cogsProfessionalFee      BigInt   @default(0) @map("cogs_professional_fee")
+  cogsLease                BigInt   @default(0) @map("cogs_lease")
+  cogsMisc                 BigInt   @default(0) @map("cogs_misc")
+  wipEnding                BigInt   @default(0) @map("wip_ending")
+  // 販管費
+  sgaExecutiveCompensation BigInt   @default(0) @map("sga_executive_compensation")
+  sgaSalary                BigInt   @default(0) @map("sga_salary")
+  sgaBonus                 BigInt   @default(0) @map("sga_bonus")
+  sgaStatutoryWelfare      BigInt   @default(0) @map("sga_statutory_welfare")
+  sgaWelfare               BigInt   @default(0) @map("sga_welfare")
+  sgaSubcontract           BigInt   @default(0) @map("sga_subcontract")
+  sgaAdvertising           BigInt   @default(0) @map("sga_advertising")
+  sgaEntertainment         BigInt   @default(0) @map("sga_entertainment")
+  sgaMeeting               BigInt   @default(0) @map("sga_meeting")
+  sgaTravel                BigInt   @default(0) @map("sga_travel")
+  sgaCommunication         BigInt   @default(0) @map("sga_communication")
+  sgaConsumables           BigInt   @default(0) @map("sga_consumables")
+  sgaOfficeConsumables     BigInt   @default(0) @map("sga_office_consumables")
+  sgaRepair                BigInt   @default(0) @map("sga_repair")
+  sgaUtilities             BigInt   @default(0) @map("sga_utilities")
+  sgaMembership            BigInt   @default(0) @map("sga_membership")
+  sgaCommission            BigInt   @default(0) @map("sga_commission")
+  sgaRent                  BigInt   @default(0) @map("sga_rent")
+  sgaLease                 BigInt   @default(0) @map("sga_lease")
+  sgaInsurance             BigInt   @default(0) @map("sga_insurance")
+  sgaTax                   BigInt   @default(0) @map("sga_tax")
+  sgaProfessionalFee       BigInt   @default(0) @map("sga_professional_fee")
+  sgaDepreciation          BigInt   @default(0) @map("sga_depreciation")
+  sgaBadDebt               BigInt   @default(0) @map("sga_bad_debt")
+  sgaManagement            BigInt   @default(0) @map("sga_management")
+  sgaMisc                  BigInt   @default(0) @map("sga_misc")
+  // PL外キャッシュアウト
+  cashoutCapex             BigInt   @default(0) @map("cashout_capex")
+  cashoutLoanRepayment     BigInt   @default(0) @map("cashout_loan_repayment")
+  cashoutOther             BigInt   @default(0) @map("cashout_other")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, fiscalYear], name: "idx_financial_company_year")
+  @@map("financial_statements")
+}
+
+// ===== コスト分類設定 =====
+model CostClassification {
+  id         String   @id @default(uuid())
+  companyId  String   @map("company_id")
+  fiscalYear Int      @map("fiscal_year")
+  itemKey    String   @map("item_key") @db.VarChar(100)
+  isGbCost   Boolean  @map("is_gb_cost")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, fiscalYear, itemKey])
+  @@map("cost_classifications")
+}
+
+// ===== コストマスタ =====
+enum CostOwnership {
+  self     // 自社
+  external // 他社
+}
+
+enum CostCategory {
+  labor         // 人工
+  heavy_machine // 重機
+  attachment    // アタッチメント
+  transport     // 運搬
+}
+
+model CostMaster {
+  id           String        @id @default(uuid())
+  companyId    String        @map("company_id")
+  fiscalYear   Int           @map("fiscal_year")
+  ownership    CostOwnership
+  category     CostCategory
+  subCategory  String        @map("sub_category") @db.VarChar(50)
+  avgDailyCost Int           @map("avg_daily_cost")
+  itemCount    Int           @map("item_count")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, fiscalYear, category], name: "idx_cost_master_company")
+  @@map("cost_masters")
+}
+
+// ===== シミュレーション =====
+enum SimulationTargetType {
+  revenue       // 売上目標
+  profit_margin // 利益率目標
+  what_if       // What-if
+}
+
+model Simulation {
+  id                    String               @id @default(uuid())
+  companyId             String               @map("company_id")
+  fiscalYear            Int                  @map("fiscal_year")
+  name                  String               @db.VarChar(255)
+  description           String?              @db.Text
+  targetType            SimulationTargetType @map("target_type")
+  targetRevenue         BigInt?              @map("target_revenue")
+  targetProfitMargin    Decimal?             @map("target_profit_margin") @db.Decimal(5, 2)
+  targetOperatingProfit BigInt?              @map("target_operating_profit")
+  targetGrossMargin     Decimal?             @map("target_gross_margin") @db.Decimal(5, 2)
+  laborCostGrowthRate   Decimal?             @map("labor_cost_growth_rate") @db.Decimal(5, 2)
+  fuelCostGrowthRate    Decimal?             @map("fuel_cost_growth_rate") @db.Decimal(5, 2)
+  wasteCostGrowthRate   Decimal?             @map("waste_cost_growth_rate") @db.Decimal(5, 2)
+  subcontractGrowthRate Decimal?             @map("subcontract_growth_rate") @db.Decimal(5, 2)
+  cpiGrowthRate         Decimal?             @map("cpi_growth_rate") @db.Decimal(5, 2)
+  simulationYears       Int                  @map("simulation_years")
+  whatIfParams          Json?                @map("what_if_params")
+  resultData            Json?                @map("result_data")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, fiscalYear], name: "idx_simulations_company")
+  @@map("simulations")
+}
+
+// ===== LLM分析履歴 =====
+enum AnalysisType {
+  insight // 経営提案
+  market  // 市場動向
+  chat    // 対話
+}
+
+model LlmAnalysis {
+  id           String       @id @default(uuid())
+  companyId    String       @map("company_id")
+  analysisType AnalysisType @map("analysis_type")
+  inputContext Json?        @map("input_context")
+  prompt       String       @db.Text
+  response     String       @db.Text
+  dataSources  Json?        @map("data_sources")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("llm_analyses")
+}
+
+// ===== 従業員プロファイル拡張（09_WORKFORCE_PLANNING）=====
+model EmployeeProfile {
+  id                    String    @id @default(uuid())
+  employeeId            String    @unique @map("employee_id")
+  birthDate             DateTime? @map("birth_date") @db.Date
+  hireDate              DateTime? @map("hire_date") @db.Date
+  department            String?   @db.VarChar(50)
+  position              String?   @db.VarChar(50)
+  retirementAge         Int       @default(65) @map("retirement_age")
+  plannedRetirementDate DateTime? @map("planned_retirement_date") @db.Date
+  performanceOverride   Decimal?  @map("performance_override") @db.Decimal(3, 2)
+  notes                 String?   @db.Text
+  companyId             String    @map("company_id")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  company  Company  @relation(fields: [companyId], references: [id])
+
+  @@map("employee_profiles")
+}
+
+// ===== 売上按分 =====
+model RevenueAttribution {
+  id                    String @id @default(uuid())
+  companyId             String @map("company_id")
+  fiscalYear            Int    @map("fiscal_year")
+  employeeId            String @map("employee_id")
+  attributedRevenue     BigInt @map("attributed_revenue")
+  attributedGrossProfit BigInt @map("attributed_gross_profit")
+  projectCount          Int    @default(0) @map("project_count")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("revenue_attributions")
+}
+
+// ===== 要員計画シミュレーション =====
+model WorkforceSimulation {
+  id               String   @id @default(uuid())
+  companyId        String   @map("company_id")
+  name             String   @db.VarChar(255)
+  baseFiscalYear   Int      @map("base_fiscal_year")
+  simulationYears  Int      @map("simulation_years")
+  targetRevenues   Json     @map("target_revenues")
+  subcontractRatio Decimal? @map("subcontract_ratio") @db.Decimal(5, 2)
+  capacityLimits   Json?    @map("capacity_limits")
+  salaryGrowthRate Decimal? @map("salary_growth_rate") @db.Decimal(5, 2)
+  hiringCostParams Json?    @map("hiring_cost_params")
+  resultData       Json?    @map("result_data")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("workforce_simulations")
+}
+
+// ===== パフォーマンス曲線設定 =====
+model PerformanceCurve {
+  id          String  @id @default(uuid())
+  companyId   String  @map("company_id")
+  position    String  @db.VarChar(50)
+  ageFrom     Int     @map("age_from")
+  ageTo       Int     @map("age_to")
+  coefficient Decimal @db.Decimal(3, 2)
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("performance_curves")
+}
+
+// ===== 監査ログ =====
+model AuditLog {
+  id         String   @id @default(uuid())
+  companyId  String   @map("company_id")
+  userId     String?  @map("user_id")
+  tableName  String   @map("table_name") @db.VarChar(100)
+  recordId   String   @map("record_id") @db.VarChar(100)
+  action     String   @db.VarChar(20) // create, update, delete
+  fieldName  String?  @map("field_name") @db.VarChar(100)
+  oldValue   String?  @map("old_value") @db.Text
+  newValue   String?  @map("new_value") @db.Text
+  source     String   @default("manual") @db.VarChar(20) // manual, import, system
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([companyId, tableName, recordId])
+  @@index([companyId, createdAt])
+  @@map("audit_logs")
+}
+
+// ===== OCR読取記録 =====
+model OcrRecord {
+  id              String    @id @default(uuid())
+  companyId       String    @map("company_id")
+  fileName        String    @map("file_name") @db.VarChar(255)
+  fileType        String    @map("file_type") @db.VarChar(20) // pdf, jpeg, png
+  documentType    String    @map("document_type") @db.VarChar(50) // pl, bs, depreciation, payroll, other
+  rawResponse     Json?     @map("raw_response")
+  extractedData   Json?     @map("extracted_data")
+  userCorrections Json?     @map("user_corrections")
+  status          String    @default("pending") @db.VarChar(20) // pending, processing, completed, failed, confirmed
+  targetTable     String?   @map("target_table") @db.VarChar(100)
+  targetRecordId  String?   @map("target_record_id") @db.VarChar(100)
+  confirmedAt     DateTime? @map("confirmed_at")
+  confirmedBy     String?   @map("confirmed_by")
+  errorMessage    String?   @map("error_message") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([companyId, status])
+  @@map("ocr_records")
+}
+
+// ===== 貸借対照表 =====
+model BalanceSheet {
+  id                    String   @id @default(uuid())
+  companyId             String   @map("company_id")
+  fiscalYear            Int      @map("fiscal_year")
+  // 流動資産
+  cashAndDeposits       BigInt   @default(0) @map("cash_and_deposits")
+  notesReceivable       BigInt   @default(0) @map("notes_receivable")
+  accountsReceivable    BigInt   @default(0) @map("accounts_receivable")
+  inventory             BigInt   @default(0)
+  prepaidExpenses       BigInt   @default(0) @map("prepaid_expenses")
+  currentAssetsOther    BigInt   @default(0) @map("current_assets_other")
+  // 固定資産
+  buildings             BigInt   @default(0)
+  machinery             BigInt   @default(0)
+  vehicles              BigInt   @default(0)
+  toolsAndEquipment     BigInt   @default(0) @map("tools_and_equipment")
+  land                  BigInt   @default(0)
+  intangibleAssets      BigInt   @default(0) @map("intangible_assets")
+  investmentsAndOther   BigInt   @default(0) @map("investments_and_other")
+  // 流動負債
+  notesPayable          BigInt   @default(0) @map("notes_payable")
+  accountsPayable       BigInt   @default(0) @map("accounts_payable")
+  shortTermLoans        BigInt   @default(0) @map("short_term_loans")
+  accruedExpenses       BigInt   @default(0) @map("accrued_expenses")
+  incomeTaxPayable      BigInt   @default(0) @map("income_tax_payable")
+  currentLiabilitiesOther BigInt @default(0) @map("current_liabilities_other")
+  // 固定負債
+  longTermLoans         BigInt   @default(0) @map("long_term_loans")
+  leaseObligations      BigInt   @default(0) @map("lease_obligations")
+  fixedLiabilitiesOther BigInt   @default(0) @map("fixed_liabilities_other")
+  // 純資産
+  capitalStock          BigInt   @default(0) @map("capital_stock")
+  capitalSurplus        BigInt   @default(0) @map("capital_surplus")
+  retainedEarnings      BigInt   @default(0) @map("retained_earnings")
+  netAssetsOther        BigInt   @default(0) @map("net_assets_other")
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, fiscalYear])
+  @@map("balance_sheets")
+}
+
+// ===== 目標設定 =====
+model CompanyTarget {
+  id                       String   @id @default(uuid())
+  companyId                String   @map("company_id")
+  fiscalYear               Int      @map("fiscal_year")
+  // PL目標
+  targetRevenue            BigInt?  @map("target_revenue")
+  targetGrossMarginRate    Decimal? @map("target_gross_margin_rate") @db.Decimal(5, 2)
+  targetOperatingMarginRate Decimal? @map("target_operating_margin_rate") @db.Decimal(5, 2)
+  // コスト目標（売上比率）
+  targetSubcontractRate    Decimal? @map("target_subcontract_rate") @db.Decimal(5, 2)
+  targetWasteRate          Decimal? @map("target_waste_rate") @db.Decimal(5, 2)
+  targetLaborRate          Decimal? @map("target_labor_rate") @db.Decimal(5, 2)
+  // 経営指標目標
+  targetEquityRatio        Decimal? @map("target_equity_ratio") @db.Decimal(5, 2)
+  targetCurrentRatio       Decimal? @map("target_current_ratio") @db.Decimal(5, 2)
+  targetRoe                Decimal? @map("target_roe") @db.Decimal(5, 2)
+  targetDebtRepaymentYears Decimal? @map("target_debt_repayment_years") @db.Decimal(5, 2)
+
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, fiscalYear])
+  @@map("company_targets")
+}
