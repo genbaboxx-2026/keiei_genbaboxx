@@ -136,7 +136,7 @@ export default function FinancialsInputPage() {
           <p className="text-sm text-slate-500 mt-1">年度: {fiscalYear}年度</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => window.location.href = "/input/upload?type=pl"}>OCR読取</Button>
+          <Button variant="outline" size="sm" onClick={() => window.location.href = "/input/upload?type=pl"}>PDFから読取</Button>
           <Button variant="outline" size="sm" onClick={() => { const input = document.createElement("input"); input.type = "file"; input.accept = ".xlsx,.xls"; input.onchange = () => { /* Excel読込はlib/excel/parser.tsを使用 */ }; input.click(); }}>Excelから読込</Button>
           {hasChanges && <span className="text-sm text-amber-600 font-medium">未���存</span>}
           <Button onClick={handleSave} disabled={isSaving || !hasChanges} className={hasChanges ? "bg-blue-600 hover:bg-blue-700" : ""}>

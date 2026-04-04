@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
       { label: "貸借対照表入力", href: "/input/balance-sheet" },
       { label: "売上按分入力", href: "/input/revenue-attribution" },
       { label: "従業員プロファイル", href: "/input/employee-profiles" },
-      { label: "ファイル一括入力", href: "/input/upload" },
+      { label: "PDF・画像から読取", href: "/input/upload" },
     ],
   },
   { label: "コストマスタ", href: "/cost-master" },

@@ -85,7 +85,8 @@ export default function UploadPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">OCR読取・ファイル入力</h1>
+      <h1 className="text-2xl font-bold text-slate-900">決算書読取・ファイル入力</h1>
+      <p className="text-sm text-slate-500">PDFや画像をアップロードすると、AIが自動で数字を読み取ります</p>
 
       {/* Drop zone */}
       <div
@@ -95,7 +96,7 @@ export default function UploadPage() {
         onDrop={handleDrop}
       >
         <div className="space-y-3">
-          <p className="text-slate-500">ファイルをドラッグ&ドロップ、または</p>
+          <p className="text-slate-500">決算書のPDFや画像をドラッグ&ドロップ、または</p>
           <div className="flex justify-center gap-3">
             <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
               <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleFileInput} className="hidden" />
