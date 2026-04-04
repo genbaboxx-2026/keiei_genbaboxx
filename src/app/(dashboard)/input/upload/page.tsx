@@ -1,43 +1,37 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const DOC_TYPES = [
-  { value: "pl", label: "損益計算書（PL）" },
-  { value: "bs", label: "貸借対照表（BS）" },
-  { value: "depreciation", label: "減価償却明細" },
-  { value: "payroll", label: "賃金台帳" },
-  { value: "other", label: "その他" },
-];
 
 interface UploadItem {
   file: File;
-  documentType: string;
   status: "pending" | "processing" | "completed" | "failed";
   ocrId?: string;
+  detectedType?: string;
   error?: string;
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  pl: "損益計算書", bs: "貸借対照表", manufacturing_cost: "製造原価報告書",
+  sga_detail: "販管費明細", depreciation: "減価償却明細", payroll: "賃金台帳",
+  tax_return: "法人税申告書", other: "その他",
+};
+
 export default function UploadPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const defaultDocType = searchParams.get("type") || "pl";
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const newItems: UploadItem[] = Array.from(files).map((file) => ({
       file,
-      documentType: defaultDocType,
       status: "pending" as const,
     }));
     setItems((prev) => [...prev, ...newItems]);
-  }, [defaultDocType]);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -49,27 +43,29 @@ export default function UploadPage() {
     if (e.target.files) addFiles(e.target.files);
   };
 
-  const updateItemDocType = (index: number, docType: string) => {
-    setItems((prev) => prev.map((item, i) => i === index ? { ...item, documentType: docType } : item));
-  };
-
   const processItem = async (index: number) => {
     setItems((prev) => prev.map((item, i) => i === index ? { ...item, status: "processing" } : item));
 
     const item = items[index];
     const formData = new FormData();
     formData.append("file", item.file);
-    formData.append("documentType", item.documentType);
+    formData.append("documentType", "auto"); // AIが自動判別
 
     try {
       const res = await fetch("/api/ocr/extract", { method: "POST", body: formData });
       const json = await res.json();
 
       if (res.ok && json.data?.status === "completed") {
-        setItems((prev) => prev.map((it, i) => i === index ? { ...it, status: "completed", ocrId: json.data.id } : it));
-        toast.success(`${item.file.name} の読取が完了しました`);
+        setItems((prev) => prev.map((it, i) => i === index ? {
+          ...it, status: "completed", ocrId: json.data.id,
+          detectedType: json.data.documentType,
+        } : it));
+        const typeName = TYPE_LABELS[json.data.documentType] || json.data.documentType;
+        toast.success(`${item.file.name} → ${typeName}として読取完了`);
       } else {
-        setItems((prev) => prev.map((it, i) => i === index ? { ...it, status: "failed", error: json.data?.error || json.error?.message || "読取失敗" } : it));
+        setItems((prev) => prev.map((it, i) => i === index ? {
+          ...it, status: "failed", error: json.data?.error || json.error?.message || "読取失敗",
+        } : it));
         toast.error(`${item.file.name} の読取に失敗しました`);
       }
     } catch {
@@ -85,8 +81,10 @@ export default function UploadPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">決算書読取・ファイル入力</h1>
-      <p className="text-sm text-slate-500">PDFや画像をアップロードすると、AIが自動で数字を読み取ります</p>
+      <h1 className="text-2xl font-bold text-slate-900">決算書読取</h1>
+      <p className="text-sm text-slate-500">
+        決算書のPDFや画像をアップロードしてください。AIが書類の種類を自動判別し、全ての数字を読み取ります。
+      </p>
 
       {/* Drop zone */}
       <div
@@ -96,8 +94,10 @@ export default function UploadPage() {
         onDrop={handleDrop}
       >
         <div className="space-y-3">
-          <p className="text-slate-500">決算書のPDFや画像をドラッグ&ドロップ、または</p>
-          <div className="flex justify-center gap-3">
+          <div className="text-4xl">📄</div>
+          <p className="text-slate-600 font-medium">決算書のPDFや画像をドラッグ&ドロップ</p>
+          <p className="text-sm text-slate-400">PL・BS・製造原価報告書など、AIが自動で判別します</p>
+          <div className="flex justify-center gap-3 pt-2">
             <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
               <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleFileInput} className="hidden" />
               ファイルを選択
@@ -130,31 +130,32 @@ export default function UploadPage() {
                     <p className="text-xs text-slate-400">{(item.file.size / 1024).toFixed(0)} KB</p>
                   </div>
 
-                  <Select value={item.documentType} onValueChange={(v) => updateItemDocType(i, v)}>
-                    <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {DOC_TYPES.map((dt) => (
-                        <SelectItem key={dt.value} value={dt.value}>{dt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <div className="flex items-center gap-2 w-36">
+                  <div className="flex items-center gap-3">
                     {item.status === "pending" && (
-                      <Button size="sm" variant="outline" onClick={() => processItem(i)}>読み取り</Button>
+                      <Button size="sm" onClick={() => processItem(i)}>読み取り開始</Button>
                     )}
                     {item.status === "processing" && (
                       <span className="text-sm text-blue-600 flex items-center gap-1">
-                        <span className="animate-spin">⏳</span> 読取中...
+                        <span className="animate-spin">⏳</span> AIが読取中...
                       </span>
                     )}
                     {item.status === "completed" && (
-                      <Button size="sm" onClick={() => router.push(`/input/upload/${item.ocrId}/review`)}>
-                        ✅ 結果を確認
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">
+                          {TYPE_LABELS[item.detectedType || ""] || "読取完了"}
+                        </span>
+                        <Button size="sm" onClick={() => router.push(`/input/upload/${item.ocrId}/review`)}>
+                          結果を確認・反映
+                        </Button>
+                      </div>
                     )}
                     {item.status === "failed" && (
-                      <span className="text-sm text-red-600">❌ {item.error}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-red-600 max-w-64 truncate">❌ {item.error}</span>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setItems(prev => prev.map((it, idx) => idx === i ? { ...it, status: "pending", error: undefined } : it));
+                        }}>再試行</Button>
+                      </div>
                     )}
                   </div>
                 </div>
