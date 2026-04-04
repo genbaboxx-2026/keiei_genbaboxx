@@ -8,9 +8,9 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   });
 
+  const { pathname } = request.nextUrl;
   const isAuthPage =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/register");
+    pathname.startsWith("/login") || pathname.startsWith("/register");
 
   if (!token && !isAuthPage) {
     return NextResponse.redirect(new URL("/login", request.url));
