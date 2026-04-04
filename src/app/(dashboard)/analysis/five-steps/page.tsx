@@ -351,7 +351,7 @@ export default function FiveStepsPage() {
                             <div className="mt-2">
                               <Slider
                                 value={[targetGrossMargin]}
-                                onValueChange={(v) => setTargetGrossMargin(v[0])}
+                                onValueChange={(v) => setTargetGrossMargin(Array.isArray(v) ? v[0] : v)}
                                 min={5} max={40} step={0.5}
                                 className="w-full"
                               />
