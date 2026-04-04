@@ -97,13 +97,13 @@ export default function UploadPage() {
         <div className="space-y-3">
           <p className="text-slate-500">ファイルをドラッグ&ドロップ、または</p>
           <div className="flex justify-center gap-3">
-            <label className="cursor-pointer">
+            <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
               <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleFileInput} className="hidden" />
-              <Button variant="outline" asChild><span>ファイルを選択</span></Button>
+              ファイルを選択
             </label>
-            <label className="cursor-pointer">
+            <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
               <input type="file" accept="image/*" capture="environment" onChange={handleFileInput} className="hidden" />
-              <Button variant="outline" asChild><span>📷 カメラで撮影</span></Button>
+              📷 カメラで撮影
             </label>
           </div>
           <p className="text-xs text-slate-400">PDF / JPEG / PNG 対応</p>
