@@ -13,6 +13,8 @@ interface OcrItem {
   accountName?: string;
   label?: string;
   amount: number | null;
+  numericValue?: number | null;
+  value?: string;
   confidence: number;
   mappedKey?: string | null;
 }
@@ -23,6 +25,7 @@ interface OcrData {
   extractedData: {
     items?: OcrItem[];
     revenue?: { amount: number | null; confidence: number };
+    totals?: Record<string, number | null>;
     notes?: string;
   };
 }
@@ -43,12 +46,15 @@ export default function OcrReviewPage() {
       if (res.ok && json.data) {
         setOcrData(json.data);
         const rawItems: OcrItem[] = json.data.extractedData?.items || [];
-        // Apply account mapping
-        const mapped = rawItems.map((item) => {
-          const name = item.accountName || item.label || "";
-          const mapping = mapAccountName(name, item.section as "cogs" | "sga" | undefined);
-          return { ...item, mappedKey: mapping?.mappedKey || null };
-        });
+        // Normalize: use amount || numericValue, apply account mapping
+        const mapped = rawItems
+          .map((item) => {
+            const name = item.accountName || item.label || "";
+            const mapping = mapAccountName(name, item.section as "cogs" | "sga" | undefined);
+            const amount = item.amount ?? item.numericValue ?? null;
+            return { ...item, amount, mappedKey: mapping?.mappedKey || null };
+          })
+          .filter((item) => item.amount != null && item.amount !== 0); // 金額がない項目は除外
         setItems(mapped);
       }
     } catch { toast.error("OCRデータの取得に失敗しました"); }
