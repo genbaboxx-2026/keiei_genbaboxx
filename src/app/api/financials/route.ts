@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
       where: { companyId: user.companyId, fiscalYear, dataType: "annual" },
     });
 
-    return NextResponse.json({ data });
+    // BigInt → Number for JSON serialization
+    const serialized = data ? JSON.parse(JSON.stringify(data, (_k, v) => typeof v === "bigint" ? Number(v) : v)) : null;
+    return NextResponse.json({ data: serialized });
   } catch (e) {
     if ((e as Error).message === "UNAUTHORIZED")
       return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "認証が必要です" } }, { status: 401 });
