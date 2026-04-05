@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatNumber } from "@/lib/format";
 import { JOB_CATEGORY_LABELS } from "@/types/employee";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 import { SIZE_CATEGORIES, ATTACHMENT_TYPES } from "@/types/equipment";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -23,7 +24,7 @@ export default function CostMasterPage() {
   const [masters, setMasters] = useState<CostMasterEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
 
   const fetchData = useCallback(async () => {
     try {

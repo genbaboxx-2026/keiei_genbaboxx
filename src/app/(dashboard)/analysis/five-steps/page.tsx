@@ -11,6 +11,8 @@ import { Slider } from "@/components/ui/slider";
 import { formatNumber } from "@/lib/format";
 import { GaugeChart } from "@/components/charts/gauge-chart";
 import { DEFAULT_CLASSIFICATIONS, ITEM_KEY_TO_FIELD } from "@/lib/constants/default-cost-classifications";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
+import { FiscalYearSelector } from "@/components/layout/fiscal-year-selector";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface Classification {
@@ -44,7 +46,7 @@ export default function FiveStepsPage() {
   const [targetOperatingProfit, setTargetOperatingProfit] = useState(7000000);
   const [isLoading, setIsLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
 
   // Fetch classifications and financial data
   const fetchData = useCallback(async () => {

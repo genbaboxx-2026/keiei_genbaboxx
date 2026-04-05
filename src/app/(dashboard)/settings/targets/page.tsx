@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 import { formatNumber } from "@/lib/format";
 
 interface TargetData {
@@ -32,7 +33,7 @@ export default function TargetsPage() {
   const [prevActuals, setPrevActuals] = useState<Record<string, number | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
 
   const fetchData = useCallback(async () => {
     try {
