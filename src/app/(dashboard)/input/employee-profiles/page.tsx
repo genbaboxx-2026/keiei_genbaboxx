@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useFiscalYearStore } from "@/store/fiscal-year-store";
 import { FiscalYearSelector } from "@/components/layout/fiscal-year-selector";
 import { SelectCell } from "@/components/tables/editable-cell";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { DEPARTMENTS, POSITIONS } from "@/lib/constants/performance-curves";
+import { JOB_CATEGORY_LABELS } from "@/types/employee";
 
 interface ProfileRow {
   employeeId: string;
@@ -20,10 +23,12 @@ interface ProfileRow {
   performanceOverride: number | null;
   notes: string;
   _dirty: boolean;
+  _isNew?: boolean;
 }
 
 const DEPT_OPTIONS = DEPARTMENTS.map(d => ({ value: d.value, label: d.label }));
 const POS_OPTIONS = POSITIONS.map(p => ({ value: p.value, label: p.label }));
+const JOB_OPTIONS = Object.entries(JOB_CATEGORY_LABELS).map(([v, l]) => ({ value: v, label: l }));
 
 function calcAge(birthDate: string): number | null {
   if (!birthDate) return null;
@@ -36,10 +41,8 @@ function calcAge(birthDate: string): number | null {
 
 function calcTenure(hireDate: string): string {
   if (!hireDate) return "-";
-  const hire = new Date(hireDate);
   const now = new Date();
-  const years = now.getFullYear() - hire.getFullYear();
-  return `${years}年`;
+  return `${now.getFullYear() - new Date(hireDate).getFullYear()}年`;
 }
 
 export default function EmployeeProfilesPage() {
@@ -47,6 +50,11 @@ export default function EmployeeProfilesPage() {
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newJobCategory, setNewJobCategory] = useState("other");
+  const [newDepartment, setNewDepartment] = useState("");
+  const [newPosition, setNewPosition] = useState("");
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -75,6 +83,49 @@ export default function EmployeeProfilesPage() {
 
   const update = (i: number, field: keyof ProfileRow, value: unknown) => {
     setRows(prev => prev.map((r, idx) => idx === i ? { ...r, [field]: value, _dirty: true } : r));
+  };
+
+  const handleAddEmployee = async () => {
+    if (!newName.trim()) { toast.error("名前を入力してください"); return; }
+    try {
+      // 1. Create employee record
+      const empRes = await fetch("/api/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nameOrTitle: newName,
+          jobCategory: newJobCategory,
+          employeeNo: rows.length + 1,
+          fiscalYear: currentFiscalYear,
+          monthlyGrossSalary: 0, monthlyHealthInsurance: 0, monthlyPension: 0,
+        }),
+      });
+      const empJson = await empRes.json();
+      if (!empRes.ok) { toast.error("従業員の追加に失敗しました"); return; }
+
+      // 2. Create profile
+      if (newDepartment || newPosition) {
+        await fetch("/api/employee-profiles/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: [{ employeeId: empJson.data.id, department: newDepartment || null, position: newPosition || null }],
+          }),
+        });
+      }
+
+      toast.success(`${newName} を追加しました`);
+      setShowAdd(false);
+      setNewName(""); setNewJobCategory("other"); setNewDepartment(""); setNewPosition("");
+      await fetchData();
+    } catch { toast.error("追加に失敗しました"); }
+  };
+
+  const handleDelete = async (employeeId: string, name: string) => {
+    if (!confirm(`${name} を削除しますか？`)) return;
+    const res = await fetch(`/api/employees/${employeeId}`, { method: "DELETE" });
+    if (res.ok) { toast.success("削除しました"); await fetchData(); }
+    else toast.error("削除に失敗しました");
   };
 
   const handleSave = async () => {
@@ -122,6 +173,7 @@ export default function EmployeeProfilesPage() {
               <th className="px-3 py-2 text-center font-medium text-slate-600 w-14">退職年</th>
               <th className="px-3 py-2 text-center font-medium text-slate-600 w-16">係数</th>
               <th className="px-3 py-2 text-left font-medium text-slate-600">備考</th>
+              <th className="px-3 py-2 w-10"></th>
             </tr>
           </thead>
           <tbody>
@@ -141,12 +193,57 @@ export default function EmployeeProfilesPage() {
                   <td className="px-3 py-1.5 text-center tabular-nums text-slate-400">{retireYear ?? "-"}</td>
                   <td className="px-1 py-0.5"><Input type="number" value={row.performanceOverride ?? ""} onChange={e => update(i, "performanceOverride", e.target.value === "" ? null : Number(e.target.value))} className="h-7 text-xs text-center w-14" step={0.05} placeholder="自動" /></td>
                   <td className="px-1 py-0.5"><Input value={row.notes} onChange={e => update(i, "notes", e.target.value)} className="h-7 text-xs" placeholder="備考" /></td>
+                  <td className="px-1 py-0.5 text-center">
+                    <button onClick={() => handleDelete(row.employeeId, row.name)} className="p-1 text-slate-400 hover:text-red-500 rounded" title="削除">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+        <div className="p-3 border-t">
+          <Button variant="outline" size="sm" onClick={() => setShowAdd(true)}>+ 従業員を追加</Button>
+        </div>
       </div>
+
+      {/* Add Employee Dialog */}
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>従業員を追加</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label>名前 *</Label>
+              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="例: 山田 太郎" />
+            </div>
+            <div className="space-y-1">
+              <Label>職種</Label>
+              <select value={newJobCategory} onChange={e => setNewJobCategory(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm">
+                {JOB_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label>部署</Label>
+              <select value={newDepartment} onChange={e => setNewDepartment(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm">
+                <option value="">選択...</option>
+                {DEPT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label>ポジション</Label>
+              <select value={newPosition} onChange={e => setNewPosition(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm">
+                <option value="">選択...</option>
+                {POS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>キャンセル</Button>
+            <Button onClick={handleAddEmployee}>追加</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
