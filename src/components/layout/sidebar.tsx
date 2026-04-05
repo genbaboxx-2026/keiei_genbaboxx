@@ -79,7 +79,6 @@ const navSections: NavSection[] = [
         { label: "従業員管理", href: "/settings/employees" },
         { label: "重機・車両・AT", href: "/settings/equipment" },
         { label: "パフォーマンス曲線", href: "/settings/performance-curves" },
-        { label: "コスト分類設定", href: "/settings/cost-classification" },
         { label: "年度管理", href: "/settings/fiscal-year" },
         { label: "ゴミ箱", href: "/settings/trash" },
       ]},
