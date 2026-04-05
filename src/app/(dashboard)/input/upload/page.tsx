@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface UploadItem {
   file: File;
@@ -20,10 +20,26 @@ const TYPE_LABELS: Record<string, string> = {
   tax_return: "法人税申告書", other: "その他",
 };
 
+interface HistoryItem {
+  id: string;
+  fileName: string;
+  documentType: string;
+  status: string;
+  createdAt: string;
+}
+
 export default function UploadPage() {
   const router = useRouter();
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // Load past OCR records
+  useEffect(() => {
+    fetch("/api/ocr/list").then(r => r.json()).then(j => {
+      if (j.data) setHistory(j.data);
+    }).catch(() => {});
+  }, []);
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const newItems: UploadItem[] = Array.from(files).map((file) => ({
@@ -163,6 +179,49 @@ export default function UploadPage() {
             </Card>
           ))}
         </div>
+      )}
+      {/* Past OCR History */}
+      {history.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">読取履歴</CardTitle></CardHeader>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="px-4 py-2 text-left font-medium text-slate-600">ファイル名</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 w-28">検出種別</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 w-20">状態</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 w-28">日時</th>
+                  <th className="px-4 py-2 w-24"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.map((h) => (
+                  <tr key={h.id} className="border-b">
+                    <td className="px-4 py-2 text-slate-700">{h.fileName}</td>
+                    <td className="px-4 py-2">
+                      <span className="text-xs bg-slate-100 px-2 py-0.5 rounded">{TYPE_LABELS[h.documentType] || h.documentType}</span>
+                    </td>
+                    <td className="px-4 py-2">
+                      {h.status === "completed" && <span className="text-xs text-emerald-600">✅ 完了</span>}
+                      {h.status === "confirmed" && <span className="text-xs text-blue-600">📋 反映済</span>}
+                      {h.status === "failed" && <span className="text-xs text-red-600">❌ 失敗</span>}
+                      {h.status === "processing" && <span className="text-xs text-amber-600">⏳ 処理中</span>}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-slate-400">{new Date(h.createdAt).toLocaleString("ja-JP")}</td>
+                    <td className="px-4 py-2 text-right">
+                      {(h.status === "completed" || h.status === "confirmed") && (
+                        <Button size="sm" variant="outline" onClick={() => router.push(`/input/upload/${h.id}/review`)}>
+                          確認
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
