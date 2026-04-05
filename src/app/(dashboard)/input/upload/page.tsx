@@ -210,11 +210,23 @@ export default function UploadPage() {
                     </td>
                     <td className="px-4 py-2 text-xs text-slate-400">{new Date(h.createdAt).toLocaleString("ja-JP")}</td>
                     <td className="px-4 py-2 text-right">
-                      {(h.status === "completed" || h.status === "confirmed") && (
-                        <Button size="sm" variant="outline" onClick={() => router.push(`/input/upload/${h.id}/review`)}>
-                          確認
+                      <div className="flex justify-end gap-1">
+                        {(h.status === "completed" || h.status === "confirmed") && (
+                          <Button size="sm" variant="outline" onClick={() => router.push(`/input/upload/${h.id}/review`)}>
+                            確認
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" className="text-slate-400 hover:text-red-500" onClick={async () => {
+                          if (!confirm("この読取履歴を削除しますか？")) return;
+                          const res = await fetch(`/api/ocr/${h.id}`, { method: "DELETE" });
+                          if (res.ok) {
+                            setHistory(prev => prev.filter(x => x.id !== h.id));
+                            toast.success("削除しました");
+                          } else { toast.error("削除に失敗しました"); }
+                        }}>
+                          削除
                         </Button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
