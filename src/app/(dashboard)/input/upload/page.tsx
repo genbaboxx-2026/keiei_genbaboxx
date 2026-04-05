@@ -17,7 +17,7 @@ interface UploadItem {
 const TYPE_LABELS: Record<string, string> = {
   pl: "損益計算書", bs: "貸借対照表", manufacturing_cost: "製造原価報告書",
   sga_detail: "販管費明細", depreciation: "減価償却明細", payroll: "賃金台帳",
-  tax_return: "法人税申告書", other: "その他",
+  tax_return: "法人税申告書", financial_statements: "決算書", other: "その他",
 };
 
 interface HistoryItem {
