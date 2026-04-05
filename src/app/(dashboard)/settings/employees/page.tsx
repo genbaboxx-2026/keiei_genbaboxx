@@ -6,7 +6,7 @@ import EmployeesInput from "@/app/(dashboard)/input/employees/page";
 import EmployeeProfilesInput from "@/app/(dashboard)/input/employee-profiles/page";
 
 export default function EmployeesManagementPage() {
-  const [activeTab, setActiveTab] = useState("salary");
+  const [activeTab, setActiveTab] = useState("profile");
 
   return (
     <div className="space-y-6">
@@ -14,8 +14,8 @@ export default function EmployeesManagementPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="salary">💰 給与データ</TabsTrigger>
           <TabsTrigger value="profile">👤 プロファイル</TabsTrigger>
+          <TabsTrigger value="salary">💰 給与データ</TabsTrigger>
         </TabsList>
 
         <TabsContent value="salary">
