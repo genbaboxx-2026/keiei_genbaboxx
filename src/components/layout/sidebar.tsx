@@ -7,109 +7,85 @@ import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  LayoutDashboard, BarChart3, ClipboardList, Target, Sparkles,
+  Users, PieChart, Bot, FileOutput, Settings, Menu, LogOut,
+} from "lucide-react";
 
 interface NavItem {
   label: string;
   href: string;
+  icon?: React.ReactNode;
   children?: NavItem[];
 }
 
-const navItems: NavItem[] = [
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
   {
-    label: "ダッシュボード",
-    href: "/",
-    children: [
-      { label: "経営ダッシュボード", href: "/" },
-      { label: "事業ダッシュボード", href: "/dashboard/business" },
+    title: "見る",
+    items: [
+      { label: "ダッシュボード", href: "/", icon: <LayoutDashboard size={16} />, children: [
+        { label: "経営ダッシュボード", href: "/" },
+        { label: "事業ダッシュボード", href: "/dashboard/business" },
+      ]},
+      { label: "分析", href: "/analysis", icon: <BarChart3 size={16} />, children: [
+        { label: "5ステップ分析", href: "/analysis/five-steps" },
+        { label: "PL詳細ビュー", href: "/analysis/pl-detail" },
+        { label: "1人あたり分析", href: "/analysis/per-capita" },
+        { label: "経営指標詳細", href: "/analysis/financial-metrics" },
+      ]},
+      { label: "コストマスタ", href: "/cost-master", icon: <ClipboardList size={16} /> },
     ],
   },
   {
-    label: "データ入力",
-    href: "/input",
-    children: [
-      { label: "人工入力", href: "/input/employees" },
-      { label: "重機・車両入力", href: "/input/equipment" },
-      { label: "決算データ入力", href: "/input/financials" },
-      { label: "貸借対照表入力", href: "/input/balance-sheet" },
-      { label: "売上按分入力", href: "/input/revenue-attribution" },
-      { label: "従業員プロファイル", href: "/input/employee-profiles" },
-      { label: "PDF・画像から読取", href: "/input/upload" },
-    ],
-  },
-  { label: "コストマスタ", href: "/cost-master" },
-  {
-    label: "経営分析",
-    href: "/analysis",
-    children: [
-      { label: "5ステップ分析", href: "/analysis/five-steps" },
-      { label: "PL詳細ビュー", href: "/analysis/pl-detail" },
-      { label: "1人あたり分析", href: "/analysis/per-capita" },
-      { label: "経営指標詳細", href: "/analysis/financial-metrics" },
-    ],
-  },
-  {
-    label: "シミュレーション",
-    href: "/simulation",
-    children: [
-      { label: "シミュレーション一覧", href: "/simulation/list" },
-      { label: "将来予測", href: "/simulation/future" },
-      { label: "目標逆算", href: "/simulation/target" },
-      { label: "What-if分析", href: "/simulation/what-if" },
+    title: "考える",
+    items: [
+      { label: "目標設定", href: "/targets", icon: <Target size={16} /> },
+      { label: "シミュレーション", href: "/simulation", icon: <Sparkles size={16} />, children: [
+        { label: "将来予測", href: "/simulation/future" },
+        { label: "目標逆算", href: "/simulation/target" },
+        { label: "What-if分析", href: "/simulation/what-if" },
+      ]},
+      { label: "要員計画", href: "/workforce", icon: <Users size={16} />, children: [
+        { label: "組織パワー分析", href: "/workforce" },
+        { label: "従業員タイムライン", href: "/workforce/timeline" },
+        { label: "採用計画", href: "/workforce/hiring-plan" },
+      ]},
+      { label: "売上按分", href: "/revenue-attribution", icon: <PieChart size={16} /> },
+      { label: "AI相談", href: "/ai", icon: <Bot size={16} />, children: [
+        { label: "経営提案", href: "/ai/insights" },
+        { label: "市場動向分析", href: "/ai/market" },
+        { label: "要員計画AI相談", href: "/ai/workforce" },
+        { label: "チャット相談", href: "/ai/chat" },
+      ]},
     ],
   },
   {
-    label: "要員計画",
-    href: "/workforce",
-    children: [
-      { label: "要員計画ダッシュボード", href: "/workforce" },
-      { label: "従業員タイムライン", href: "/workforce/timeline" },
-      { label: "採用計画シミュレーション", href: "/workforce/hiring-plan" },
+    title: "出す",
+    items: [
+      { label: "レポート出力", href: "/reports", icon: <FileOutput size={16} /> },
     ],
   },
   {
-    label: "AI相談",
-    href: "/ai",
-    children: [
-      { label: "経営提案", href: "/ai/insights" },
-      { label: "市場動向分析", href: "/ai/market" },
-      { label: "要員計画AI相談", href: "/ai/workforce" },
-      { label: "チャット相談", href: "/ai/chat" },
-    ],
-  },
-  { label: "レポート出力", href: "/reports" },
-  {
-    label: "設定",
-    href: "/settings",
-    children: [
-      { label: "企業情報", href: "/settings/company" },
-      { label: "目標設定", href: "/settings/targets" },
-      { label: "パフォーマンス曲線", href: "/settings/performance-curves" },
-      { label: "年度管理", href: "/settings/fiscal-year" },
-      { label: "ユーザー管理", href: "/settings/users" },
-      { label: "コスト分類設定", href: "/settings/cost-classification" },
-      { label: "ゴミ箱", href: "/settings/trash" },
+    title: "設定",
+    items: [
+      { label: "設定", href: "/settings", icon: <Settings size={16} />, children: [
+        { label: "企業情報", href: "/settings/company" },
+        { label: "決算書読込", href: "/settings/financial-import" },
+        { label: "従業員管理", href: "/settings/employees" },
+        { label: "重機・車両・AT", href: "/settings/equipment" },
+        { label: "パフォーマンス曲線", href: "/settings/performance-curves" },
+        { label: "コスト分類設定", href: "/settings/cost-classification" },
+        { label: "年度管理", href: "/settings/fiscal-year" },
+        { label: "ゴミ箱", href: "/settings/trash" },
+      ]},
     ],
   },
 ];
-
-// Hamburger icon
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-      />
-    </svg>
-  );
-}
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -120,23 +96,27 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <h1 className="text-lg font-bold text-white">四次元ポケット</h1>
         <p className="text-xs text-slate-400 mt-1">解体業経営シミュレーター</p>
       </div>
-      <nav className="flex-1 p-3 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <NavItemComponent
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </ul>
+      <nav className="flex-1 py-2 overflow-y-auto">
+        {navSections.map((section, si) => (
+          <div key={section.title}>
+            {si > 0 && <div className="border-t border-slate-700 mx-3 my-2" />}
+            <div className="px-4 py-2 text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+              {section.title}
+            </div>
+            <ul className="space-y-0.5 px-2">
+              {section.items.map((item) => (
+                <NavItemComponent key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
       <div className="p-3 border-t border-slate-700">
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors text-left"
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors"
         >
+          <LogOut size={14} />
           ログアウト
         </button>
       </div>
@@ -144,51 +124,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-// Desktop sidebar - always visible
-export function Sidebar() {
-  return (
-    <aside className="hidden lg:block w-64 min-h-screen flex-shrink-0">
-      <div className="fixed w-64 h-screen overflow-hidden">
-        <SidebarContent />
-      </div>
-    </aside>
-  );
-}
-
-// Mobile/tablet header with hamburger menu
-export function MobileHeader() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <header className="lg:hidden sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-slate-900 text-white">
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-slate-800">
-            <MenuIcon className="h-6 w-6" />
-            <span className="sr-only">メニューを開く</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-64 border-0">
-          <SidebarContent onNavigate={() => setOpen(false)} />
-        </SheetContent>
-      </Sheet>
-      <h1 className="text-base font-bold">四次元ポケット</h1>
-    </header>
-  );
-}
-
-function NavItemComponent({
-  item,
-  pathname,
-  onNavigate,
-}: {
-  item: NavItem;
-  pathname: string;
-  onNavigate?: () => void;
-}) {
-  const isActive =
-    pathname === item.href ||
-    item.children?.some((child) => pathname === child.href);
+function NavItemComponent({ item, pathname, onNavigate }: { item: NavItem; pathname: string; onNavigate?: () => void }) {
+  const isActive = pathname === item.href || item.children?.some((c) => pathname === c.href);
 
   return (
     <li>
@@ -196,25 +133,26 @@ function NavItemComponent({
         href={item.children ? item.children[0].href : item.href}
         onClick={onNavigate}
         className={cn(
-          "block px-3 py-2 rounded-md text-sm font-medium transition-colors",
+          "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors",
           isActive
-            ? "bg-slate-800 text-white"
+            ? "bg-slate-800 text-white border-l-[3px] border-blue-500 pl-[9px]"
             : "text-slate-300 hover:bg-slate-800 hover:text-white"
         )}
       >
-        {item.label}
+        {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
+        <span>{item.label}</span>
       </Link>
       {item.children && isActive && (
-        <ul className="ml-4 mt-1 space-y-1">
+        <ul className="ml-4 mt-0.5 space-y-0.5">
           {item.children.map((child) => (
             <li key={child.href}>
               <Link
                 href={child.href}
                 onClick={onNavigate}
                 className={cn(
-                  "block px-3 py-1.5 rounded-md text-xs transition-colors",
+                  "block pl-4 pr-3 py-1 rounded-md text-xs transition-colors",
                   pathname === child.href
-                    ? "bg-slate-700 text-white"
+                    ? "bg-slate-700 text-white border-l-2 border-blue-400 pl-[14px]"
                     : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
                 )}
               >
@@ -225,5 +163,34 @@ function NavItemComponent({
         </ul>
       )}
     </li>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden lg:block w-60 min-h-screen flex-shrink-0">
+      <div className="fixed w-60 h-screen overflow-hidden">
+        <SidebarContent />
+      </div>
+    </aside>
+  );
+}
+
+export function MobileHeader() {
+  const [open, setOpen] = useState(false);
+  return (
+    <header className="lg:hidden sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-slate-900 text-white">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="text-white hover:bg-slate-800">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-60 border-0">
+          <SidebarContent onNavigate={() => setOpen(false)} />
+        </SheetContent>
+      </Sheet>
+      <h1 className="text-sm font-bold">四次元ポケット</h1>
+    </header>
   );
 }
