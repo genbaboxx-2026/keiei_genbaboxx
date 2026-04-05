@@ -61,7 +61,7 @@ const navItems: NavItem[] = [
     label: "要員計画",
     href: "/workforce",
     children: [
-      { label: "要員計画ダッシュボ���ド", href: "/workforce" },
+      { label: "要員計画ダッシュボード", href: "/workforce" },
       { label: "従業員タイムライン", href: "/workforce/timeline" },
       { label: "採用計画シミュレーション", href: "/workforce/hiring-plan" },
     ],

@@ -33,7 +33,7 @@ export default function AiWorkforcePage() {
           <CardContent className="p-6">
             <div className="prose prose-sm max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: simpleMarkdown(analysis) }} />
             <div className="flex gap-2 mt-6 pt-4 border-t">
-              <Link href="/ai/chat?q=要員計画について���しく教えてください"><Button variant="outline" size="sm">チャットで詳しく相談 →</Button></Link>
+              <Link href="/ai/chat?q=要員計画について詳しく教えてください"><Button variant="outline" size="sm">チャットで詳しく相談 →</Button></Link>
               <Link href="/workforce/hiring-plan"><Button variant="outline" size="sm">採用計画シミュレーション →</Button></Link>
             </div>
           </CardContent>

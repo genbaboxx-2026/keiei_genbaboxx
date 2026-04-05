@@ -105,6 +105,6 @@ export async function DELETE(
       return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "認証が必要です" } }, { status: 401 });
     }
     console.error("DELETE /api/employees/[id] error:", e);
-    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "削除に失敗し���した" } }, { status: 500 });
+    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "削除に失敗しました" } }, { status: 500 });
   }
 }

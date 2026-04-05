@@ -130,6 +130,6 @@ export async function POST(request: NextRequest) {
     if ((e as Error).message === "UNAUTHORIZED")
       return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "認証が必要です" } }, { status: 401 });
     console.error("POST /api/cost-masters/recalculate error:", e);
-    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "���計算に失敗しました" } }, { status: 500 });
+    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "再計算に失敗しました" } }, { status: 500 });
   }
 }
