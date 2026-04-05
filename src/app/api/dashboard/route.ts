@@ -84,10 +84,10 @@ export async function GET(request: NextRequest) {
     // BS indicators
     let bsIndicators = null;
     if (bs) {
-      const currentAssets = (bs.cashAndDeposits||0)+(bs.notesReceivable||0)+(bs.accountsReceivable||0)+(bs.inventory||0)+(bs.prepaidExpenses||0)+(bs.currentAssetsOther||0);
-      const fixedAssets = (bs.buildings||0)+(bs.machinery||0)+(bs.vehicles||0)+(bs.toolsAndEquipment||0)+(bs.land||0)+(bs.intangibleAssets||0)+(bs.investmentsAndOther||0);
+      const currentAssets = (bs.cashAndDeposits||0)+(bs.notesReceivable||0)+(bs.accountsReceivable||0)+(bs.inventory||0)+(bs.prepaidExpenses||0)+(bs.wipConstruction||0)+(bs.allowanceForBadDebt||0)+(bs.currentAssetsOther||0);
+      const fixedAssets = (bs.buildings||0)+(bs.buildingEquipment||0)+(bs.machinery||0)+(bs.vehicles||0)+(bs.toolsAndEquipment||0)+(bs.land||0)+(bs.intangibleAssets||0)+(bs.investmentsAndOther||0);
       const totalAssets = currentAssets + fixedAssets;
-      const currentLiabilities = (bs.notesPayable||0)+(bs.accountsPayable||0)+(bs.shortTermLoans||0)+(bs.accruedExpenses||0)+(bs.incomeTaxPayable||0)+(bs.currentLiabilitiesOther||0);
+      const currentLiabilities = (bs.notesPayable||0)+(bs.accountsPayable||0)+(bs.shortTermLoans||0)+(bs.accruedExpenses||0)+(bs.incomeTaxPayable||0)+(bs.advancesReceived||0)+(bs.currentLiabilitiesOther||0);
       const fixedLiabilities = (bs.longTermLoans||0)+(bs.leaseObligations||0)+(bs.fixedLiabilitiesOther||0);
       const totalLiabilities = currentLiabilities + fixedLiabilities;
       const netAssets = (bs.capitalStock||0)+(bs.capitalSurplus||0)+(bs.retainedEarnings||0)+(bs.netAssetsOther||0);

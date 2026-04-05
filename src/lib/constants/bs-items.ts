@@ -21,10 +21,13 @@ export const BS_ITEMS: BsItem[] = [
   { key: "accountsReceivable", label: "売掛金", section: "currentAssets", isEditable: true },
   { key: "inventory", label: "棚卸資産", section: "currentAssets", isEditable: true },
   { key: "prepaidExpenses", label: "前払費用", section: "currentAssets", isEditable: true },
+  { key: "wipConstruction", label: "未成工事支出金", section: "currentAssets", isEditable: true },
+  { key: "allowanceForBadDebt", label: "貸倒引当金", section: "currentAssets", isEditable: true },
   { key: "currentAssetsOther", label: "その他", section: "currentAssets", isEditable: true },
   { key: "_currentAssetsTotal", label: "流動資産合計", section: "currentAssets", isEditable: false, isSummary: true },
   // 固定資産
   { key: "buildings", label: "建物", section: "fixedAssets", isEditable: true },
+  { key: "buildingEquipment", label: "建物附属設備", section: "fixedAssets", isEditable: true },
   { key: "machinery", label: "機械装置", section: "fixedAssets", isEditable: true },
   { key: "vehicles", label: "車両運搬具", section: "fixedAssets", isEditable: true },
   { key: "toolsAndEquipment", label: "工具器具備品", section: "fixedAssets", isEditable: true },
@@ -39,6 +42,7 @@ export const BS_ITEMS: BsItem[] = [
   { key: "shortTermLoans", label: "短期借入金", section: "currentLiabilities", isEditable: true },
   { key: "accruedExpenses", label: "未払金", section: "currentLiabilities", isEditable: true },
   { key: "incomeTaxPayable", label: "未払法人税等", section: "currentLiabilities", isEditable: true },
+  { key: "advancesReceived", label: "未成工事受入金", section: "currentLiabilities", isEditable: true },
   { key: "currentLiabilitiesOther", label: "その他", section: "currentLiabilities", isEditable: true },
   { key: "_currentLiabilitiesTotal", label: "流動負債合計", section: "currentLiabilities", isEditable: false, isSummary: true },
   // 固定負債

@@ -15,11 +15,11 @@ function computeBsSummaries(d: BsData): BsData {
   const out = { ...d };
   const sum = (keys: string[]) => keys.reduce((s, k) => s + (d[k] || 0), 0);
 
-  out._currentAssetsTotal = sum(["cashAndDeposits", "notesReceivable", "accountsReceivable", "inventory", "prepaidExpenses", "currentAssetsOther"]);
-  out._fixedAssetsTotal = sum(["buildings", "machinery", "vehicles", "toolsAndEquipment", "land", "intangibleAssets", "investmentsAndOther"]);
+  out._currentAssetsTotal = sum(["cashAndDeposits", "notesReceivable", "accountsReceivable", "inventory", "prepaidExpenses", "wipConstruction", "allowanceForBadDebt", "currentAssetsOther"]);
+  out._fixedAssetsTotal = sum(["buildings", "buildingEquipment", "machinery", "vehicles", "toolsAndEquipment", "land", "intangibleAssets", "investmentsAndOther"]);
   out._totalAssets = out._currentAssetsTotal + out._fixedAssetsTotal;
 
-  out._currentLiabilitiesTotal = sum(["notesPayable", "accountsPayable", "shortTermLoans", "accruedExpenses", "incomeTaxPayable", "currentLiabilitiesOther"]);
+  out._currentLiabilitiesTotal = sum(["notesPayable", "accountsPayable", "shortTermLoans", "accruedExpenses", "incomeTaxPayable", "advancesReceived", "currentLiabilitiesOther"]);
   out._fixedLiabilitiesTotal = sum(["longTermLoans", "leaseObligations", "fixedLiabilitiesOther"]);
   out._totalLiabilities = out._currentLiabilitiesTotal + out._fixedLiabilitiesTotal;
 

@@ -441,9 +441,12 @@ model BalanceSheet {
   accountsReceivable    BigInt   @default(0) @map("accounts_receivable")
   inventory             BigInt   @default(0)
   prepaidExpenses       BigInt   @default(0) @map("prepaid_expenses")
+  wipConstruction       BigInt   @default(0) @map("wip_construction")        // 未成工事支出金
+  allowanceForBadDebt   BigInt   @default(0) @map("allowance_for_bad_debt")  // 貸倒引当金（マイナス）
   currentAssetsOther    BigInt   @default(0) @map("current_assets_other")
   // 固定資産
   buildings             BigInt   @default(0)
+  buildingEquipment     BigInt   @default(0) @map("building_equipment")      // 建物附属設備
   machinery             BigInt   @default(0)
   vehicles              BigInt   @default(0)
   toolsAndEquipment     BigInt   @default(0) @map("tools_and_equipment")
@@ -456,6 +459,7 @@ model BalanceSheet {
   shortTermLoans        BigInt   @default(0) @map("short_term_loans")
   accruedExpenses       BigInt   @default(0) @map("accrued_expenses")
   incomeTaxPayable      BigInt   @default(0) @map("income_tax_payable")
+  advancesReceived      BigInt   @default(0) @map("advances_received")        // 未成工事受入金
   currentLiabilitiesOther BigInt @default(0) @map("current_liabilities_other")
   // 固定負債
   longTermLoans         BigInt   @default(0) @map("long_term_loans")
