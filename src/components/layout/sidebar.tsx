@@ -78,7 +78,6 @@ const navSections: NavSection[] = [
         { label: "決算書読込", href: "/settings/financial-import" },
         { label: "従業員管理", href: "/settings/employees" },
         { label: "重機・車両・AT", href: "/settings/equipment" },
-        { label: "パフォーマンス曲線", href: "/settings/performance-curves" },
         { label: "年度管理", href: "/settings/fiscal-year" },
         { label: "ゴミ箱", href: "/settings/trash" },
       ]},
