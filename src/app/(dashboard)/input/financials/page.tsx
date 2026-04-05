@@ -7,6 +7,8 @@ import { EditableCell } from "@/components/tables/editable-cell";
 import { formatNumber } from "@/lib/format";
 import { PL_ITEMS, EDITABLE_FIELD_KEYS } from "@/lib/constants/pl-items";
 import { triggerCostMasterRecalculation } from "@/lib/triggers/recalculate-cost-master";
+import { FiscalYearSelector } from "@/components/layout/fiscal-year-selector";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 
 type PlData = Record<string, number>;
 
@@ -39,7 +41,7 @@ export default function FinancialsInputPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalJson, setOriginalJson] = useState("");
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
 
   const fetchData = useCallback(async () => {
     try {
@@ -133,7 +135,7 @@ export default function FinancialsInputPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">決算データ入力（損益計算書）</h1>
-          <p className="text-sm text-slate-500 mt-1">年度: {fiscalYear}年度</p>
+          <FiscalYearSelector />
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => window.location.href = "/input/upload?type=pl"}>PDFから読取</Button>

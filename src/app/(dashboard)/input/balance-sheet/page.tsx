@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { EditableCell } from "@/components/tables/editable-cell";
 import { formatNumber } from "@/lib/format";
 import { BS_ITEMS, BS_EDITABLE_KEYS, BS_SECTIONS } from "@/lib/constants/bs-items";
+import { FiscalYearSelector } from "@/components/layout/fiscal-year-selector";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 
 type BsData = Record<string, number>;
 
@@ -33,7 +35,7 @@ export default function BalanceSheetPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalJson, setOriginalJson] = useState("");
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
 
   const fetchData = useCallback(async () => {
     try {

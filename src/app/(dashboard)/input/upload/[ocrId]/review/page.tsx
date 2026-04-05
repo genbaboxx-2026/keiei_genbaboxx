@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EditableCell } from "@/components/tables/editable-cell";
 import { formatNumber } from "@/lib/format";
 import { mapAccountName } from "@/lib/ocr/account-mapping";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 
 interface OcrItem {
   section?: string;
@@ -38,6 +39,7 @@ export default function OcrReviewPage() {
   const [items, setItems] = useState<OcrItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
+  const { currentFiscalYear } = useFiscalYearStore();
 
   const fetchOcr = useCallback(async () => {
     try {
@@ -84,7 +86,7 @@ export default function OcrReviewPage() {
       const res = await fetch(`/api/ocr/${ocrId}/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correctedData, fiscalYear: new Date().getFullYear() }),
+        body: JSON.stringify({ correctedData, fiscalYear: currentFiscalYear }),
       });
 
       if (res.ok) {

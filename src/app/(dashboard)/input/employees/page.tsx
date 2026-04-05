@@ -18,6 +18,8 @@ import { formatNumber } from "@/lib/format";
 import { calculateEmployeeCost } from "@/lib/calculation/employee-cost";
 import { triggerCostMasterRecalculation } from "@/lib/triggers/recalculate-cost-master";
 import { JOB_CATEGORY_LABELS, type JobCategory } from "@/types/employee";
+import { FiscalYearSelector } from "@/components/layout/fiscal-year-selector";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 
 interface EmployeeRow {
   id?: string;
@@ -70,7 +72,7 @@ export default function EmployeesInputPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
   const originalRowsRef = useRef<string>("");
 
   // Fetch data

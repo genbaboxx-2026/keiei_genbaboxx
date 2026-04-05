@@ -21,6 +21,8 @@ import {
   ATTACHMENT_TYPES,
   type EquipmentType,
 } from "@/types/equipment";
+import { FiscalYearSelector } from "@/components/layout/fiscal-year-selector";
+import { useFiscalYearStore } from "@/store/fiscal-year-store";
 
 interface EquipmentRow {
   id?: string;
@@ -90,7 +92,7 @@ export default function EquipmentInputPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
-  const fiscalYear = new Date().getFullYear();
+  const { currentFiscalYear: fiscalYear } = useFiscalYearStore();
   const originalRef = useRef<string>("");
 
   const fetchData = useCallback(async () => {
